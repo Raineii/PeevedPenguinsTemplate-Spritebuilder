@@ -10,7 +10,7 @@
 
 @implementation Penguin
 
-/*-(instancetype)init{
+-(instancetype)init{
     
     self = [super init];
     
@@ -19,6 +19,6 @@
     }
     
     return self;
-}*/
+}
 
 @end

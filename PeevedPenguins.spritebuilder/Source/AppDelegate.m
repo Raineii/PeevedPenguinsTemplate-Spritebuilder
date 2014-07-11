@@ -54,10 +54,10 @@
     
     [self setupCocos2dWithOptions:cocos2dSetup];
     
-    /*//Manually added lines of code for testing purposes
+    //Manually added lines of code for testing purposes
     [CCBReader load:@"Penguin"];
     [CCBReader load: @"Seal"];
-     */
+     
     
     return YES;
 }
