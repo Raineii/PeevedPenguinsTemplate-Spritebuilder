@@ -35,7 +35,7 @@
     CCNode *penguin = [CCBReader load:@"Penguin"];
     
     //Position the penguin at the bowl of the catapult
-    penguin.position = ccpAdd(_catapultArm.position, ccp(16, 50));
+    penguin.position = ccpAdd(_catapultArm.position, ccp(16, 100));
     
     //Add the penguin to the physics node of this scene (because it has physics enabled)
     [_physicsNode addChild:penguin];
