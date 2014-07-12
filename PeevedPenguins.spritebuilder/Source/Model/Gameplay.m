@@ -7,6 +7,8 @@
 //
 
 #import "Gameplay.h"
+#import "CCPhysics+ObjectiveChipmunk.h" //For the collision handling code
+
 
 @implementation Gameplay{
     CCPhysicsNode *_physicsNode;
@@ -35,6 +37,7 @@
     //Make these nodes uncollidable
     _pullbackNode.physicsBody.collisionMask = @[];
     _mouseJointNode.physicsBody.collisionMask = @[];
+    _physicsNode.collisionDelegate = self;
 }
 
 //Called on every touch in this scene
@@ -140,4 +143,33 @@
     [[CCDirector sharedDirector] replaceScene:[CCBReader loadAsScene:@"Gameplay"]];
 }
 
+-(void)ccPhysicsCollisionPostSolve:(CCPhysicsCollisionPair *)pair seal:(CCNode *)nodeA typeB:(CCNode *)nodeB{
+    
+    CCLOG(@"Something collided with a seal!");
+    float energy = [pair totalKineticEnergy];
+    
+    //If the energy is large enough, remove the seal
+    if(energy > 5000.f){
+        //In case multiple objects collide with a seal within the same keyframe, addPostStepBlock method from _physics node's space method ensures the sealRemoved method only gets called once. When we call our code inside a block, it only gets called once. Cocos2D will only run one block of code per key and frame.
+        [[_physicsNode space] addPostStepBlock:^{[self sealRemoved: nodeA];} key:nodeA];
+    }
+}
+
+-(void)sealRemoved: (CCNode *)seal{
+    
+    //Load particle effect
+    CCParticleSystem *explosion = (CCParticleSystem *) [CCBReader load:@"SealExplosion"];
+    
+    //Make the particle effect clean itself up, once it is completed
+    explosion.autoRemoveOnFinish = TRUE;
+    
+    //Place the particle effect on the seal's position
+    explosion.position = seal.position;
+    
+    //Add the particle effect to the same node the seal is on
+    [seal.parent addChild:explosion];
+    
+    //Finally, remove the destroyed seal
+    [seal removeFromParent];
+}
 @end

@@ -21,4 +21,10 @@
     return self;
 }*/
 
+-(void)didLoadFromCCB{
+    
+    //To identify seals when they participate in a collision.
+    self.physicsBody.collisionType = @"seal";
+}
+
 @end
