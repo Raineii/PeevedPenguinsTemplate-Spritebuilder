@@ -147,7 +147,7 @@
     
     CCLOG(@"Something collided with a seal!");
     float energy = [pair totalKineticEnergy];
-    
+    CCLOG(@"Energy: %f", energy);
     //If the energy is large enough, remove the seal
     if(energy > 5000.f){
         //In case multiple objects collide with a seal within the same keyframe, addPostStepBlock method from _physics node's space method ensures the sealRemoved method only gets called once. When we call our code inside a block, it only gets called once. Cocos2D will only run one block of code per key and frame.
