@@ -8,6 +8,9 @@
 
 #import "Gameplay.h"
 #import "CCPhysics+ObjectiveChipmunk.h" //For the collision handling code
+#import "Penguin.h"
+
+static const float MIN_SPEED = 5.f;
 
 
 @implementation Gameplay{
@@ -18,9 +21,26 @@
     CCNode *_pullbackNode;
     CCNode *_mouseJointNode;
     CCPhysicsJoint *_mouseJoint;
-    CCNode *_currentPenguin;
+    Penguin *_currentPenguin;
     CCPhysicsJoint *_penguinCatapultJoint;
+    CCAction *_followPenguin;
     
+}
+
+-(void)update:(CCTime)delta{
+    
+    if(_currentPenguin.launched){
+        
+        int xMin = _currentPenguin.boundingBox.origin.x;
+        int xMax = xMin + _currentPenguin.boundingBox.size.width;
+        
+        //If speed is below minimum speed, assume this attempt is over
+        if(ccpLength(_currentPenguin.physicsBody.velocity) < MIN_SPEED || xMin < self.boundingBox.origin.x || xMax > self.boundingBox.origin.x + self.boundingBox.size.width){
+            
+            [self nextAttempt];
+            return;
+        }
+    }
 }
 
 
@@ -49,7 +69,7 @@
     if(CGRectContainsPoint([_catapultArm boundingBox], touchLocation)){
         
         //Create a penguin from the ccb-file
-        _currentPenguin = [CCBReader load:@"Penguin"];
+        _currentPenguin = (Penguin *)[CCBReader load:@"Penguin"];
         
         //Initially position it at the scoop. 34,138 is the position in the node space of the _catapult arm
         CGPoint penguinPosition = [_catapultArm convertToWorldSpace: ccp(34, 138)];
@@ -95,7 +115,11 @@
     [self releaseCatapult];
 }
 
+
+
 -(void)releaseCatapult{
+    
+    _currentPenguin.launched = TRUE;
     
     if(_mouseJoint != nil){
         //Releases the joint and lets the catapult snap back
@@ -110,11 +134,13 @@
         _currentPenguin.physicsBody.allowsRotation = TRUE;
         
         //Follow the flying penguin
-        CCActionFollow *follow = [CCActionFollow actionWithTarget:_currentPenguin worldBoundary:self.boundingBox];
-        [_contentNode runAction:follow];
+        _followPenguin = [CCActionFollow actionWithTarget:_currentPenguin worldBoundary:self.boundingBox];
+        [_contentNode runAction:_followPenguin];
     }
 }
 
+
+/*
 -(void)launchPenguin{
     //Loads the Penguin.ccb we've set up before in SpriteBuilder
     CCNode *penguin = [CCBReader load:@"Penguin"];
@@ -137,11 +163,15 @@
     //[self runAction:follow];
     [_contentNode runAction:follow];
 }
+*/
+
 
 -(void)retry{
     //Reload this level
     [[CCDirector sharedDirector] replaceScene:[CCBReader loadAsScene:@"Gameplay"]];
 }
+
+
 
 -(void)ccPhysicsCollisionPostSolve:(CCPhysicsCollisionPair *)pair seal:(CCNode *)nodeA wildcard:(CCNode *)nodeB{
     
@@ -174,4 +204,15 @@
     //Finally, remove the destroyed seal
     [seal removeFromParent];
 }
+
+
+-(void)nextAttempt{
+    _currentPenguin = nil;
+    [_contentNode stopAction:_followPenguin];
+    
+    CCActionMoveTo *actionMoveTo = [CCActionMoveTo actionWithDuration:1.f position: ccp(0,0)];
+    [_contentNode runAction:actionMoveTo];
+}
+
+
 @end
